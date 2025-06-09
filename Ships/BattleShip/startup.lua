@@ -558,7 +558,7 @@ pidControl.autoPilot = function (prop, wp)
 				if shipData.autopilot_yaw and math.abs(yaw_diff) > 0.05 then
 					shipData.autopilot_message = {"adjusting yaw", "towards target ..."}
 					shipData.level = true
-					pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+					pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 					pidControl.update_omega(prop.K, prop.Omega_max, {x=0,y=0,z=0}, {pitch=false, yaw=true, roll=false}, {pitch=0, yaw=target_yaw, roll=0})
 				else
 					-- correct yaw, move forward
@@ -570,7 +570,7 @@ pidControl.autoPilot = function (prop, wp)
 						z = target.z,
 					}
 					shipData.lock = true
-					pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+					pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 					shipData.level = false
 					pidControl.update_omega(prop.K, prop.Omega_max, {x=0,y=0,z=0}, {pitch=false, yaw=false, roll=false}, {pitch=nil, yaw=nil, roll=nil})
 				end
@@ -588,14 +588,14 @@ pidControl.autoPilot = function (prop, wp)
 				z = target.z,
 			}
 			shipData.lock = true
-			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 		else
 			shipData.lastPos = { -- adjust to target y
 					x = target.x,
 					y = target.y,
 					z = target.z,
 				}
-				pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+				pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 			if math.abs(target.y-shipData.pos.y) > 0.5 then -- reach target x z
 				shipData.autopilot_message = {"adjusting to", "target Y ..."}
 			else
@@ -708,6 +708,7 @@ pidControl.starShip = function (input, prop, wp, phys)
 			shipData.autopilot = false
 			shipData.lock = false
 			shipData.level = false
+			shipData.lastY = shipData.pos.y
 		else
 			shipData.autopilot_trim = true -- do autotrimming when autopilot is turn on
 			shipData.autopilot_yaw = true -- adjust yaw when autopilot is turn on
