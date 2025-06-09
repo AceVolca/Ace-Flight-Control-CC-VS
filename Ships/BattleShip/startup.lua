@@ -527,7 +527,7 @@ pidControl.autoPilot = function (prop, wp)
 				z = shipData.pos.z,
 			}
 			shipData.lock = true
-			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 			pidControl.update_omega(prop.K, prop.Omega_max, {x=0,y=0,z=0}, {pitch=false, yaw=false, roll=false}, {pitch=nil, yaw=nil, roll=nil})
 		else
 			shipData.lock = false
@@ -544,7 +544,7 @@ pidControl.autoPilot = function (prop, wp)
 			if shipData.autopilot_trim and math.abs(roll_diff) > 0.01 or math.abs(pitch_diff) > 0.01 then
 				shipData.autopilot_message = {"trimming", "pitch/roll ..."}
 				shipData.level = true
-				pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+				pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 				pidControl.update_omega(prop.K, prop.Omega_max, {x=0,y=0,z=0}, {pitch=true, yaw=false, roll=true}, {pitch=0, yaw=nil, roll=0})
 			else
 				shipData.autopilot_trim = false -- not trimming in the following autopilot
@@ -664,7 +664,7 @@ pidControl.spaceShip = function (input, prop, wp, phys)
 
 		-- implement control
 		if shipData.lock then
-			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 			pidControl.update_omega(prop.K, prop.Omega_max, {x=0, y=0, z=0}, {pitch=false, yaw=false, roll=false})
 		else
 			-- for body, +x = rightward; +z = backward; +y = upward
@@ -674,7 +674,7 @@ pidControl.spaceShip = function (input, prop, wp, phys)
 				y = (input.up == input.down and 0) or (input.up and 1 or -1),
 				z = input.LeftStick.y,
 			}
-			pidControl.update_v3d(prop.K, prop.Vmax, input_v_scale)
+			pidControl.update_v3d(prop.K, prop.Vmax, input_v_scale, false)
 
 			-- for body, x = pitch; y = yaw; z = roll
 			local input_omega_scale = {
@@ -740,7 +740,7 @@ pidControl.starShip = function (input, prop, wp, phys)
 
 		-- implement control
 		if shipData.lock then
-			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0})
+			pidControl.update_v3d(prop.K, prop.Vmax, {x=0, y=0, z=0}, false)
 			pidControl.update_omega(prop.K, prop.Omega_max, {x=0, y=0, z=0}, {pitch=false, yaw=false, roll=false})
 		else
 			-- for body, +x = rightward; +z = backward; +y = upward
@@ -753,7 +753,7 @@ pidControl.starShip = function (input, prop, wp, phys)
 			if input_v_scale.y == 0 then -- no input for altitude adjustment
 				pidControl.update_v3d(prop.K, prop.Vmax, input_v_scale, true)
 			else
-				pidControl.update_v3d(prop.K, prop.Vmax, input_v_scale)
+				pidControl.update_v3d(prop.K, prop.Vmax, input_v_scale, false)
 				shipData.lastY = shipData.pos.y -- update current y
 			end
 
