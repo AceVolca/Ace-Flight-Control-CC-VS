@@ -22,19 +22,20 @@ local properties = {
 		y={P=7.5, I=1, D=0.5},
 		z={P=7.5, I=0, D=0.2},
 		omega={P=8, I=0, D=1},
-		level={P=4, I=0, D=0.4},
+		level={P=15, I=0, D=0.4},
 	},
 	Vmax = {
-		x = 35,
-		y = 35,
-		z = 35,
+		x = 40,
+		y = 40,
+		z = 40,
 	},
 	Omega_max = {
-		x = 1.5,
-		y = 0.7,
-		z = 0.7,
+		x = 3,
+		y = 1.0,
+		z = 1.0,
 	},
 	gravity_mult = {0, 0},
+	burn_mult = 5,
 	NESWYaw = { -- subject to initial placementFace
 		N = 0,
 		E = -math.pi/2,
@@ -324,6 +325,7 @@ local shipData = {
 	euler = nil, -- euler from physics_tick
 	id = ship.getId(), -- ID of the ship
 	user = nil, -- name of the user
+	burn = false, -- burn acceleration
 }
 
 -- update ship data with physics_tick
@@ -385,11 +387,19 @@ pidControl.update_v3d = function (k, vmax, input_v_scale, locky)
 		v_des = WorldToBody(v_des_w, shipData.quat)
 	else
 		local norm_v_scale = NormVector(input_v_scale)
-		v_des = { -- desired v based on user input and vmax
-			x = norm_v_scale.x * vmax.x,
-			y = norm_v_scale.y * vmax.y,
-			z = norm_v_scale.z * vmax.z,
-		}
+		if shipData.burn then
+			v_des = { -- desired v based on user input and vmax
+				x = norm_v_scale.x * vmax.x * properties.burn_mult,
+				y = norm_v_scale.y * vmax.y * properties.burn_mult,
+				z = norm_v_scale.z * vmax.z * properties.burn_mult,
+			}
+		else
+			v_des = { -- desired v based on user input and vmax
+				x = norm_v_scale.x * vmax.x,
+				y = norm_v_scale.y * vmax.y,
+				z = norm_v_scale.z * vmax.z,
+			}
+		end
 		if locky then
 			local v_locky_w = {
 				x = 0,
@@ -625,6 +635,7 @@ pidControl.spaceShip = function (input, prop, wp, phys)
 			shipData.autopilot_trim = true -- do autotrimming when autopilot is turn on
 			shipData.autopilot_yaw = true -- adjust yaw when autopilot is turn on
 			shipData.autopilot = true
+			shipData.burn = false -- turn off burn acceleration
 		end
 	end
 	prevLeftJoyClick = currLeftJoyClick
@@ -660,6 +671,12 @@ pidControl.spaceShip = function (input, prop, wp, phys)
 			end
 		end
 		prevBack = currBack
+
+		if input.RightJoyClick then
+			shipData.burn = true
+		else
+			shipData.burn = false
+		end
 
 		-- implement control
 		if shipData.lock then
